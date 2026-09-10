@@ -1,0 +1,83 @@
+// Country name -> coordinates mapping for GDELT sourcecountry field
+// GDELT uses full country names or ISO codes
+export const COUNTRY_COORDS: Record<string, { lat: number; lng: number }> = {
+  Taiwan: { lat: 23.7, lng: 121.0 },
+  China: { lat: 35.0, lng: 105.0 },
+  "Hong Kong": { lat: 22.32, lng: 114.17 },
+  Japan: { lat: 36.2, lng: 138.25 },
+  "South Korea": { lat: 36.5, lng: 127.77 },
+  Korea: { lat: 36.5, lng: 127.77 },
+  "United States": { lat: 39.83, lng: -98.58 },
+  US: { lat: 39.83, lng: -98.58 },
+  USA: { lat: 39.83, lng: -98.58 },
+  Canada: { lat: 56.13, lng: -106.35 },
+  "United Kingdom": { lat: 55.38, lng: -3.44 },
+  UK: { lat: 55.38, lng: -3.44 },
+  England: { lat: 55.38, lng: -3.44 },
+  Australia: { lat: -25.27, lng: 133.78 },
+  Singapore: { lat: 1.35, lng: 103.82 },
+  India: { lat: 20.59, lng: 78.96 },
+  France: { lat: 46.23, lng: 2.21 },
+  Germany: { lat: 51.17, lng: 10.45 },
+  Russia: { lat: 61.52, lng: 105.32 },
+  Philippines: { lat: 12.88, lng: 121.77 },
+  Vietnam: { lat: 14.06, lng: 108.28 },
+  Thailand: { lat: 15.87, lng: 100.99 },
+  Indonesia: { lat: -0.79, lng: 113.92 },
+  Malaysia: { lat: 4.21, lng: 101.98 },
+  Spain: { lat: 40.46, lng: -3.75 },
+  Italy: { lat: 41.87, lng: 12.57 },
+  Netherlands: { lat: 52.13, lng: 5.29 },
+  Switzerland: { lat: 46.82, lng: 8.23 },
+  Brazil: { lat: -14.24, lng: -51.93 },
+  Mexico: { lat: 23.63, lng: -102.55 },
+  Argentina: { lat: -38.42, lng: -63.62 },
+  "South Africa": { lat: -30.56, lng: 22.94 },
+  Nigeria: { lat: 9.08, lng: 8.68 },
+  Egypt: { lat: 26.82, lng: 30.8 },
+  "Saudi Arabia": { lat: 23.89, lng: 45.09 },
+  "United Arab Emirates": { lat: 23.42, lng: 53.85 },
+  UAE: { lat: 23.42, lng: 53.85 },
+  Iran: { lat: 32.43, lng: 53.69 },
+  Iraq: { lat: 33.22, lng: 43.68 },
+  Israel: { lat: 31.05, lng: 34.85 },
+  Turkey: { lat: 38.96, lng: 35.24 },
+  Ukraine: { lat: 48.92, lng: 31.18 },
+  Poland: { lat: 51.92, lng: 19.15 },
+  Sweden: { lat: 60.13, lng: 18.64 },
+  Norway: { lat: 60.47, lng: 8.47 },
+  Finland: { lat: 61.92, lng: 25.75 },
+  Denmark: { lat: 56.26, lng: 9.5 },
+  Belgium: { lat: 50.5, lng: 4.47 },
+  Austria: { lat: 47.52, lng: 14.55 },
+  Ireland: { lat: 53.41, lng: -8.24 },
+  Portugal: { lat: 39.4, lng: -8.22 },
+  Greece: { lat: 39.07, lng: 21.82 },
+  "Czech Republic": { lat: 49.82, lng: 15.47 },
+  "Czechia": { lat: 49.82, lng: 15.47 },
+  Romania: { lat: 45.94, lng: 24.97 },
+  Hungary: { lat: 47.16, lng: 19.5 },
+  "New Zealand": { lat: -40.9, lng: 174.89 },
+  Chile: { lat: -35.68, lng: -71.54 },
+  Colombia: { lat: 4.57, lng: -74.3 },
+  Peru: { lat: -9.19, lng: -75.02 },
+  Pakistan: { lat: 30.38, lng: 69.35 },
+  Bangladesh: { lat: 23.68, lng: 90.36 },
+  "Sri Lanka": { lat: 7.87, lng: 80.77 },
+  Cambodia: { lat: 12.57, lng: 104.99 },
+  Laos: { lat: 19.86, lng: 102.5 },
+  Myanmar: { lat: 21.91, lng: 95.96 },
+  Brunei: { lat: 4.54, lng: 114.73 },
+};
+
+export function getCountryCoords(country: string): { lat: number; lng: number } {
+  const normalized = country.trim();
+  if (COUNTRY_COORDS[normalized]) return COUNTRY_COORDS[normalized];
+  // Try case-insensitive match
+  const key = Object.keys(COUNTRY_COORDS).find(
+    (k) => k.toLowerCase() === normalized.toLowerCase(),
+  );
+  if (key) return COUNTRY_COORDS[key];
+  // Default: null island (will be filtered out)
+  return { lat: 0, lng: 0 };
+}

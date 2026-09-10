@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRACE — 全球情報儀表板 簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-deep: #0a0f1a;
+    --bg-panel: #0f172a;
+    --bg-card: #1e293b;
+    --border: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --text-dim: #475569;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7;
+    --gradient-1: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --gradient-glow: radial-gradient(ellipse at top, rgba(59,130,246,0.08), transparent 60%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Slide Container ── */
+  #presentation {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+    pointer-events: none;
+    background: var(--bg-deep);
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ── Background Effects ── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--gradient-glow);
+    pointer-events: none;
+  }
+
+  .slide::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      linear-gradient(rgba(51,65,85,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(51,65,85,0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  .slide > * { position: relative; z-index: 1; }
+
+  /* ── Slide Number & Progress ── */
+  .slide-meta {
+    position: absolute;
+    bottom: 28px;
+    left: 80px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 10;
+  }
+  .slide-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+  .slide-section {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .slide-section::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background: var(--border);
+    margin-right: 12px;
+    vertical-align: middle;
+  }
+
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-amber), var(--accent-red));
+    transition: width 0.5s ease;
+    z-index: 20;
+  }
+
+  /* ── Navigation ── */
+  .nav-controls {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+    background: rgba(245,158,11,0.08);
+  }
+  .nav-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 0 8px;
+  }
+
+  /* ── Typography ── */
+  .slide-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent-amber);
+    margin-bottom: 20px;
+  }
+  .slide-title {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  .slide-title .highlight { color: var(--accent-amber); }
+  .slide-subtitle {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 700px;
+    margin-bottom: 40px;
+  }
+
+  /* ── Slide 1: Cover ── */
+  .cover {
+    align-items: center;
+    text-align: center;
+  }
+  .cover-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--accent-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    box-shadow: 0 0 40px rgba(239,68,68,0.3);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 50px rgba(239,68,68,0.4); }
+  }
+  .cover-logo svg { width: 32px; height: 32px; }
+  .cover-title {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+  .cover-subtitle {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: 6px;
+    margin-bottom: 40px;
+  }
+  .cover-tagline {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    margin-top: 20px;
+  }
+  .cover-meta-item {
+    text-align: center;
+  }
+  .cover-meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .cover-meta-value {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ── Cards Grid ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  .cards-grid.three-col { grid-template-columns: repeat(3, 1fr); }
+  .cards-grid.four-col { grid-template-columns: repeat(4, 1fr); }
+
+  .info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--accent-amber));
+    opacity: 0.8;
+  }
+  .info-card:hover {
+    border-color: var(--card-accent, var(--accent-amber));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--card-accent, var(--accent-amber)) 15%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .card-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--card-accent, var(--accent-amber));
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .card-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ── Feature List ── */
+  .feature-list {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.3s;
+  }
+  .feature-item:hover {
+    border-color: var(--accent-amber);
+    background: color-mix(in srgb, var(--bg-card) 90%, var(--accent-amber) 4%);
+  }
+  .feature-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-amber);
+    min-width: 32px;
+  }
+  .feature-body { flex: 1; }
+  .feature-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .feature-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Two Column Layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .col-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-amber);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Stat Display ── */
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .stat-box {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-amber);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── Tech Stack ── */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .tech-category {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .tech-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tech-cat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tech-cat-icon svg { width: 16px; height: 16px; }
+  .tech-cat-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .tech-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tech-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .tech-name {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .tech-role {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .tech-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* ── Flow Diagram ── */
+  .flow-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 1000px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .flow-node {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+    position: relative;
+  }
+  .flow-node-icon {
+    margin-bottom: 8px;
+  }
+  .flow-node-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .flow-node-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  .flow-node-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 18px;
+  }
+
+  /* ── Timeline ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    max-width: 800px;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 24px;
+    padding: 16px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 24px;
+    margin-left: 12px;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 22px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent-amber);
+    border: 2px solid var(--bg-deep);
+  }
+  .timeline-content { flex: 1; }
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .timeline-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Design Principles ── */
+  .principle-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .principle-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--card-accent, var(--accent-amber));
+    opacity: 0.3;
+    line-height: 1;
+  }
+  .principle-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .principle-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ── Application Scene ── */
+  .scene-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    transition: all 0.3s;
+  }
+  .scene-card:hover {
+    border-color: var(--card-accent);
+    transform: translateY(-2px);
+  }
+  .scene-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .scene-icon svg { width: 22px; height: 22px; }
+  .scene-body { flex: 1; }
+  .scene-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .scene-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .scene-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .scene-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Summary Slide ── */
+  .summary-hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  .summary-item {
+    text-align: center;
+    padding: 24px;
+  }
+  .summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .summary-icon svg { width: 24px; height: 24px; }
+  .summary-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .summary-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active .anim {
+    animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+    opacity: 0;
+  }
+  .slide.active .anim:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active .anim:nth-child(2) { animation-delay: 0.2s; }
+  .slide.active .anim:nth-child(3) { animation-delay: 0.3s; }
+  .slide.active .anim:nth-child(4) { animation-delay: 0.4s; }
+  .slide.active .anim:nth-child(5) { animation-delay: 0.5s; }
+  .slide.active .anim:nth-child(6) { animation-delay: 0.6s; }
+  .slide.active .anim:nth-child(7) { animation-delay: 0.7s; }
+
+  /* ── Content Width Helper ── */
+  .content-wide { width: 100%; max-width: 1100px; }
+
+  /* ── Misc ── */
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .pill {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent-amber);
+    border-radius: 2px;
+    margin: 20px 0;
+  }
+
+  .end-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div id="presentation">
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 1 — 封面
+════════════════════════════════════════════════════════════════ -->
+<div class="slide cover active" data-slide="1">
+  <div class="cover-logo anim">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  </div>
+  <div class="cover-title anim">TRACE</div>
+  <div class="cover-subtitle anim">Global Intelligence Dashboard</div>
+  <div class="cover-tagline anim">
+    一套以台灣為核心的開源情報監測平台，<br/>
+    整合全球新聞脈絡、地緣政治事件、氣象環境情境與 AI 敘事分析，<br/>
+    在單一互動式地圖上呈現多維度的戰略全貌。
+  </div>
+  <div class="cover-meta anim">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Date</div>
+      <div class="cover-meta-value mono">2026.09.10</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Category</div>
+      <div class="cover-meta-value">OSINT / 情報儀表板</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Pages</div>
+      <div class="cover-meta-value mono">10</div>
+    </div>
+  </div>
+  <div class="end-mark anim">— PRESS → TO BEGIN —</div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">01 / 10</span>
+    <span class="slide-section">封面</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 2 — 產品概述
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <div class="slide-eyebrow anim">PRODUCT OVERVIEW</div>
+  <div class="slide-title anim">產品概述</div>
+  <div class="slide-subtitle anim">
+    TRACE 是一套即時全球情報儀表板，將分散於全球各地的新聞報導、地緣事件與環境資料，
+    融合為單一視覺化介面，讓使用者一眼掌握世界對台灣的關注全貌。
+  </div>
+
+  <div class="stat-row anim">
+    <div class="stat-box">
+      <div class="stat-num">3</div>
+      <div class="stat-label">資料來源層級</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">4</div>
+      <div class="stat-label">地圖情報圖層</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">40+</div>
+      <div class="stat-label">監測國家</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">3</div>
+      <div class="stat-label">新聞框架分類</div>
+    </div>
+  </div>
+
+  <div class="cards-grid anim" style="max-width: 1000px;">
+    <div class="info-card" style="--card-accent: var(--accent-blue);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div class="card-title">全球新聞聚合</div>
+      <div class="card-text">透過 GDELT DOC API 與 Google News RSS 雙層擷取，將全球數十國的新聞報導即時匯聚至地圖上，並按國家自動分群。</div>
+    </div>
+    <div class="info-card" style="--card-accent: var(--accent-red);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="card-title">互動式世界地圖</div>
+      <div class="card-text">以 Leaflet 為基礎的互動地圖，支援縮放、平移、圖層切換，將新聞、事件、航道與氣象四層資料疊加呈現。</div>
+    </div>
+    <div class="info-card" style="--card-accent: var(--accent-amber);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+      </div>
+      <div class="card-title">AI 敘事簡報</div>
+      <div class="card-text">自動分析新聞框架與主題趨勢，生成三大核心敘事、區域情感差異與關鍵頭條摘要，並支援自然語言問答。</div>
+    </div>
+    <div class="info-card" style="--card-accent: var(--accent-green);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/></svg>
+      </div>
+      <div class="card-title">搜尋審計追蹤</div>
+      <div class="card-text">每次查詢均記錄資料來源、延遲時間、記錄數量與狀態，形成完整審計日誌，確保資料可溯源、可驗證。</div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">02 / 10</span>
+    <span class="slide-section">產品概述</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 3 — 使用者體驗 (一)：搜尋與地圖互動
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <div class="slide-eyebrow anim">USER EXPERIENCE — PART 1</div>
+  <div class="slide-title anim">使用者體驗：<span class="highlight">搜尋與地圖互動</span></div>
+  <div class="slide-subtitle anim">
+    使用者輸入關鍵字後，系統即時從 GDELT 與 RSS 擷取新聞，
+    將結果以彩色圓點標記在全球地圖上，每個圓點的大小反映報導數量，顏色代表新聞框架類型。
+  </div>
+
+  <div class="two-col anim">
+    <div class="col-section">
+      <h3>搜尋流程</h3>
+      <div class="feature-list" style="max-width: none;">
+        <div class="feature-item">
+          <span class="feature-num">01</span>
+          <div class="feature-body">
+            <div class="feature-title">關鍵字輸入</div>
+            <div class="feature-desc">在頂部搜尋列輸入任意主題（如 Taiwan、TSMC、Strait tensions），按 Enter 或點擊搜尋按鈕。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">02</span>
+          <div class="feature-body">
+            <div class="feature-title">多層資料擷取</div>
+            <div class="feature-desc">系統依序查詢 GDELT DOC API，若結果不足則自動補充 Google News RSS，最終備有內建模擬資料集作為兜底。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">03</span>
+          <div class="feature-body">
+            <div class="feature-title">視覺化呈現</div>
+            <div class="feature-desc">新聞按來源國家分群，以 CircleMarker 標示於地圖。圓點大小隨報導數量動態調整，顏色對應經濟（藍）、軍事（紅）、外交（綠）三類框架。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">04</span>
+          <div class="feature-body">
+            <div class="feature-title">互動瀏覽</div>
+            <div class="feature-desc">點擊圓點可展開彈出視窗，顯示該國最新頭條與環境情境分頁；滑鼠懸停顯示國家名稱與報導數量的快速預覽。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-section">
+      <h3>地圖操作</h3>
+      <div class="feature-list" style="max-width: none;">
+        <div class="feature-item">
+          <span class="feature-num">05</span>
+          <div class="feature-body">
+            <div class="feature-title">平滑縮放與導航</div>
+            <div class="feature-desc">支援滑鼠滾輪平滑縮放，左上角提供放大、縮小、重置全球視角與一鍵聚焦台灣四組導航按鈕。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">06</span>
+          <div class="feature-body">
+            <div class="feature-title">底圖主題切換</div>
+            <div class="feature-desc">提供 Dark（OSINT 深色）與 Light（Voyager 淺色）兩種底圖風格，一鍵切換以適應不同場景需求。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">07</span>
+          <div class="feature-body">
+            <div class="feature-title">框架分布概覽</div>
+            <div class="feature-desc">地圖右上角即時顯示經濟、軍事、外交三類框架的占比條形圖，讓使用者快速掌握整體報導傾向。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">08</span>
+          <div class="feature-body">
+            <div class="feature-title">查詢資訊覆蓋層</div>
+            <div class="feature-desc">地圖左上角顯示當前查詢關鍵字、文章總數、涵蓋國家數與擷取時間，所有覆蓋層均為半透明浮動面板，不遮擋地圖操作。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">03 / 10</span>
+    <span class="slide-section">使用者體驗</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 4 — 使用者體驗 (二)：AI 敘事簡報
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <div class="slide-eyebrow anim">USER EXPERIENCE — PART 2</div>
+  <div class="slide-title anim">使用者體驗：<span class="highlight">AI 敘事簡報</span></div>
+  <div class="slide-subtitle anim">
+    右側 AI 面板將龐雜的新聞資料轉化為結構化情報，
+    使用者一鍵生成摘要後，可透過自然語言問答深入探索特定面向。
+  </div>
+
+  <div class="cards-grid three-col anim" style="max-width: 1100px;">
+    <div class="info-card" style="--card-accent: var(--accent-amber);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="card-title">核心敘事主題</div>
+      <div class="card-text">
+        系統掃描所有新聞標題，比對六大利害關係主題模式（科技供應鏈、海峽軍事、兩岸外交、全球貿易、區域安全聯盟、國會交流），按提及次數排序取出前三大主題，讓使用者一眼掌握當日報導焦點。
+      </div>
+    </div>
+    <div class="info-card" style="--card-accent: var(--accent-blue);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="card-title">區域情感差異分析</div>
+      <div class="card-text">
+        將新聞來源分為西方媒體與亞洲媒體兩大群組，比較雙方在軍事、經濟、外交三類框架上的報導比重，生成一段敘述性分析，揭示不同區域如何看待同一事件。
+      </div>
+    </div>
+    <div class="info-card" style="--card-accent: var(--accent-green);">
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg>
+      </div>
+      <div class="card-title">關鍵浮現頭條</div>
+      <div class="card-text">
+        從前 20 篇文章中，優先挑選不同國家的報導以確保地理多樣性，彙整為八則關鍵頭條清單，協助使用者快速掃描當日最重要的浮現議題。
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 24px;"></div>
+
+  <div class="feature-list anim" style="max-width: 1100px;">
+    <div class="feature-item">
+      <span class="feature-num">Q&A</span>
+      <div class="feature-body">
+        <div class="feature-title">自然語言追問</div>
+        <div class="feature-desc">
+          摘要生成後，使用者可在底部輸入框以英文提問，例如「Why is there a spike in news from Japan?」或「How does Western vs Asian coverage differ?」。
+          系統會根據當前資料集生成結構化回覆，涵蓋國家別分析、軍事框架占比、經濟供應鏈焦點、情感差異等面向。
+          面板亦提供四組建議問題按鈕，降低使用者的冷啟動門檻。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">04 / 10</span>
+    <span class="slide-section">使用者體驗</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 5 — 使用者體驗 (三)：圖層管理與環境情境
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="slide-eyebrow anim">USER EXPERIENCE — PART 3</div>
+  <div class="slide-title anim">使用者體驗：<span class="highlight">圖層管理與環境情境</span></div>
+  <div class="slide-subtitle anim">
+    TRACE 的核心價值在於多維度資料疊加——使用者可自由切換四個情報圖層，
+    並在每個地標的彈出視窗中查看即時環境情境資料。
+  </div>
+
+  <div class="flow-container anim">
+    <div class="flow-node" style="border-color: var(--accent-blue);">
+      <div class="flow-node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+      <div class="flow-node-title">新聞覆蓋</div>
+      <div class="flow-node-sub">News Coverage</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-color: var(--accent-red);">
+      <div class="flow-node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      <div class="flow-node-title">地緣事件</div>
+      <div class="flow-node-sub">Geopolitical Events</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-color: var(--accent-amber);">
+      <div class="flow-node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></div>
+      <div class="flow-node-title">航运咽喉</div>
+      <div class="flow-node-sub">Choke Points</div>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-node" style="border-color: var(--accent-green);">
+      <div class="flow-node-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M17.5 19a4.5 4.5 0 1 0 0-9h-1.8A7 7 0 1 0 4 14"/></svg></div>
+      <div class="flow-node-title">氣象覆蓋</div>
+      <div class="flow-node-sub">WeatherNext 3</div>
+    </div>
+  </div>
+
+  <div style="height: 28px;"></div>
+
+  <div class="two-col anim">
+    <div class="col-section">
+      <h3>圖層切換面板</h3>
+      <div class="feature-list" style="max-width: none;">
+        <div class="feature-item">
+          <span class="feature-num" style="color: var(--accent-blue);">&#9679;</span>
+          <div class="feature-body">
+            <div class="feature-title">新聞覆蓋層</div>
+            <div class="feature-desc">顯示各國新聞圓點，按框架類型著色，點擊可瀏覽頭條與環境情境。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num" style="color: var(--accent-red);">&#9679;</span>
+          <div class="feature-body">
+            <div class="feature-title">地緣政治事件層</div>
+            <div class="feature-desc">標記軍事演習、外交峰會、經濟動態等事件，按嚴重程度調整圓點大小。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num" style="color: var(--accent-amber);">&#9679;</span>
+          <div class="feature-body">
+            <div class="feature-title">航运咽喉層</div>
+            <div class="feature-desc">標示台灣海峽、麻六甲海峽等七處戰略航道與航空走廊，以虛線圓環呈現。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num" style="color: var(--accent-green);">&#9679;</span>
+          <div class="feature-body">
+            <div class="feature-title">氣象覆蓋層</div>
+            <div class="feature-desc">疊加雲圖、降水、風向三種 WeatherNext 3 圖塊，並顯示台灣海峽即時海象 widget。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-section">
+      <h3>環境情境整合</h3>
+      <div class="feature-list" style="max-width: none;">
+        <div class="feature-item">
+          <span class="feature-num">A</span>
+          <div class="feature-body">
+            <div class="feature-title">5 公里網格環境參數</div>
+            <div class="feature-desc">每個地標彈出視窗提供「Env Context」分頁，顯示該座標的溫度、地表濕度、降水率、風速風向、雲量等 WeatherNext 3 模擬數據。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">B</span>
+          <div class="feature-body">
+            <div class="feature-title">台灣海峽海象 Widget</div>
+            <div class="feature-desc">開啟氣象層後，地圖右下角浮現海象面板，顯示風速、浪高、雲量、能見度、氣溫、氣壓六項即時指標。</div>
+          </div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-num">C</span>
+          <div class="feature-body">
+            <div class="feature-title">搜尋審計日誌</div>
+            <div class="feature-desc">頂部「Search Status: Verified」徽章可點擊展開審計視窗，逐一列出每次查詢的來源、延遲、記錄數與狀態（成功／備援／錯誤）。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">05 / 10</span>
+    <span class="slide-section">使用者體驗</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 6 — 應用場合 (一)：情報監測與地緣政治分析
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="6">
+  <div class="slide-eyebrow anim">USE CASES — PART 1</div>
+  <div class="slide-title anim">應用場合：<span class="highlight">情報監測與地緣政治分析</span></div>
+  <div class="slide-subtitle anim">
+    TRACE 適用於需要快速掌握全球對台情報脈動的專業場景，
+    將分散的開源資訊整合為可操作的戰略圖像。
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 1100px;" class="anim">
+    <div class="scene-card" style="--card-accent: var(--accent-red);">
+      <div class="scene-icon" style="background: rgba(239,68,68,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">國防安全監測</div>
+        <div class="scene-text">
+          國防智庫與安全研究機構可透過軍事框架篩選，即時掌握各國對台海軍事動態的報導傾向。
+          地緣事件層標記 PLA 演習、美艦穿越台海等事件，搭配航运咽喉層可同時評估海上通道風險。
+          AI 簡報自動比較西方與亞洲媒體的軍事框架差異，協助分析人員判讀各方戰略信號。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">OSINT</span>
+          <span class="scene-tag" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">軍事框架</span>
+          <span class="scene-tag" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">咽喉點分析</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-card" style="--card-accent: var(--accent-green);">
+      <div class="scene-icon" style="background: rgba(34,197,94,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">外交決策支援</div>
+        <div class="scene-text">
+          外事單位與國際關係研究人員可追蹤各國對台外交報導的框架變化，辨識國會訪問、雙邊會談等外交事件的媒體能見度。
+          AI 區域情感差異分析可量化西方與亞洲媒體的敘事落差，為外交策略提供輿論感知依據。
+          搜尋審計日誌確保每次查詢的資料來源可追溯，符合決策流程的嚴謹要求。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">外交框架</span>
+          <span class="scene-tag" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">輿情感知</span>
+          <span class="scene-tag" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">可溯源</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-card" style="--card-accent: var(--accent-amber);">
+      <div class="scene-icon" style="background: rgba(245,158,11,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">智庫與學術研究</div>
+        <div class="scene-text">
+          大學國際關係科系與政策智庫可利用 TRACE 作為教學與研究工具，讓學生或研究員在互動地圖上觀察全球媒體對台灣的報導分布，
+          透過框架分類理解「媒體框架化」的實際效果。AI 簡報提供的六大利害關係主題模式可作為質化研究的起點，
+          而搜尋審計日誌則記錄了完整的資料擷取過程，便於研究再現。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">媒體框架研究</span>
+          <span class="scene-tag" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">教學工具</span>
+          <span class="scene-tag" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">研究再現性</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">06 / 10</span>
+    <span class="slide-section">應用場合</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 7 — 應用場合 (二)：供應鏈風險與媒體框架研究
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="7">
+  <div class="slide-eyebrow anim">USE CASES — PART 2</div>
+  <div class="slide-title anim">應用場合：<span class="highlight">供應鏈風險與媒體研究</span></div>
+  <div class="slide-subtitle anim">
+    除了國防外交，TRACE 的經濟框架與環境情境整合，
+    使其亦適用於企業風險管理與新聞傳播研究領域。
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 1100px;" class="anim">
+    <div class="scene-card" style="--card-accent: var(--accent-blue);">
+      <div class="scene-icon" style="background: rgba(59,130,246,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">半導體供應鏈風險監控</div>
+        <div class="scene-text">
+          企業情報部門與供應鏈管理團隊可透過經濟框架篩選，追蹤全球媒體對 TSMC、半導體供應鏈、晶片出口管制等議題的報導動態。
+          當特定國家的經濟框架報導量突然上升時，可能預示供應鏈政策變化或市場訊號。
+          搭配航运咽喉層可同時評估物流通道風險，結合環境情境則可考量天候對港口與航運的潛在影響。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">經濟框架</span>
+          <span class="scene-tag" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">TSMC</span>
+          <span class="scene-tag" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">供應鏈</span>
+          <span class="scene-tag" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">物流風險</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-card" style="--card-accent: var(--accent-cyan);">
+      <div class="scene-icon" style="background: rgba(6,182,212,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M17.5 19a4.5 4.5 0 1 0 0-9h-1.8A7 7 0 1 0 4 14"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">氣象與環境情報整合</div>
+        <div class="scene-text">
+          海運物流與航空業者可利用 WeatherNext 3 氣象覆蓋層，即時掌握台灣海峽及周邊海域的雲圖、降水與風向分佈。
+          台灣海峽海象 Widget 提供風速、浪高、能見度等關鍵航行指標。
+          每個地標的環境情境分頁進一步提供 5 公里網格級別的溫度、濕度、降水率資料，可用於評估天候對港口作業或航空路線的影響。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">WeatherNext 3</span>
+          <span class="scene-tag" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">海象監測</span>
+          <span class="scene-tag" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">5km 網格</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-card" style="--card-accent: var(--accent-purple);">
+      <div class="scene-icon" style="background: rgba(168,85,247,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/></svg>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">新聞傳播與框架研究</div>
+        <div class="scene-text">
+          傳播學系與新聞研究機構可利用 TRACE 進行跨國媒體框架比較研究。
+          系統自動將每篇報導分類為經濟、軍事、外交三類框架，研究者可在地圖上視覺化觀察各國媒體的框架偏好，
+          並透過 AI 區域情感差異分析量化東西方媒體的敘事落差。
+          框架分布占比條形圖提供整體報導傾向的量化指標，可用於追蹤特定事件期間的框架遷移。
+        </div>
+        <div class="scene-tags">
+          <span class="scene-tag" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">框架分析</span>
+          <span class="scene-tag" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">跨國比較</span>
+          <span class="scene-tag" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">敘事差異</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">07 / 10</span>
+    <span class="slide-section">應用場合</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 8 — 設計理念
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="8">
+  <div class="slide-eyebrow anim">DESIGN PHILOSOPHY</div>
+  <div class="slide-title anim">設計理念</div>
+  <div class="slide-subtitle anim">
+    TRACE 的設計遵循五大核心原則，從視覺美學到資料治理，
+    每一層面都服務於「讓情報使用者更高效地理解世界」這一目標。
+  </div>
+
+  <div class="cards-grid anim" style="max-width: 1100px;">
+    <div class="principle-card" style="--card-accent: var(--accent-red);">
+      <div class="principle-num">01</div>
+      <div class="principle-title">OSINT 情報美學</div>
+      <div class="principle-text">
+        整體視覺語言取材自專業情報分析工具——深色底圖、琥珀色高亮、等寬字型標示數據、
+        紅色脈動指示器標示即時狀態。所有 UI 元素採用半透明浮動面板設計，
+        讓地圖始終保持為視覺主體，覆蓋層則如情報標注般懸浮其上。
+        圓點大小、顏色編碼與虛線樣式均有明確的語意對應，使用者無需手冊即可直覺理解。
+      </div>
+    </div>
+    <div class="principle-card" style="--card-accent: var(--accent-blue);">
+      <div class="principle-num">02</div>
+      <div class="principle-title">多層資料融合</div>
+      <div class="principle-text">
+        新聞、事件、航道、氣象四種異質資料來源在同一地圖上疊加呈現，
+        使用者可自由組合圖層以建構不同分析視角。
+        彈出視窗採用分頁設計（Headlines / Env Context），
+        在不增加視覺負荷的前提下，讓單一地標承載多重維度的資訊。
+      </div>
+    </div>
+    <div class="principle-card" style="--card-accent: var(--accent-amber);">
+      <div class="principle-num">03</div>
+      <div class="principle-title">可審計的資料治理</div>
+      <div class="principle-text">
+        每次搜尋均產生完整的審計日誌，記錄資料來源名稱、查詢字串、記錄數量、延遲毫秒數與狀態標記。
+        頂部「Search Status: Verified」徽章提供一鍵查驗入口。
+        這確保所有呈現給使用者的資料均可回溯至原始 API 呼叫，
+        符合情報分析的可驗證性要求。
+      </div>
+    </div>
+    <div class="principle-card" style="--card-accent: var(--accent-green);">
+      <div class="principle-num">04</div>
+      <div class="principle-title">漸進式資訊揭露</div>
+      <div class="principle-text">
+        介面設計遵循「概覽先於細節」的原則——先以地圖圓點呈現全球分布概況，
+        滑鼠懸停顯示國家與數量的快速預覽，點擊後才展開完整頭條列表與環境情境。
+        AI 面板同樣先提供一鍵摘要按鈕，生成後才顯示建議問題與對話輸入框。
+        這種漸進式揭露降低了使用者的認知負荷。
+      </div>
+    </div>
+    <div class="principle-card" style="--card-accent: var(--accent-cyan);">
+      <div class="principle-num">05</div>
+      <div class="principle-title">優雅降級與韌性</div>
+      <div class="principle-text">
+        資料擷取採三層備援機制：GDELT DOC API 為首選，不足時自動補充 Google News RSS，
+        兩者皆失敗時啟用內建模擬資料集。審計日誌忠實記錄每一層的嘗試結果，
+        即使在降級模式下使用者仍能體驗完整功能。
+        這確保系統在各種網路條件下皆可運作。
+      </div>
+    </div>
+    <div class="principle-card" style="--card-accent: var(--accent-purple);">
+      <div class="principle-num">06</div>
+      <div class="principle-title">回應式互動設計</div>
+      <div class="principle-text">
+        所有互動元素均提供即時視覺回饋——搜尋時顯示載入動畫，
+        圓點 hover 時展示 Tooltip，圖層切換時圓點帶光暈效果，
+        底圖切換即時改變整體配色。AI 面板可收合為側邊窄條，
+        釋放地圖空間。這些微互動讓系統感覺敏銳且專業。
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">08 / 10</span>
+    <span class="slide-section">設計理念</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 9 — 開發模組與工具
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="9">
+  <div class="slide-eyebrow anim">DEVELOPMENT STACK</div>
+  <div class="slide-title anim">開發模組與工具</div>
+  <div class="slide-subtitle anim">
+    TRACE 採用現代前端技術棧，以 React + TypeScript 為核心，
+    整合多個地圖、氣象與資料 API，打造完整的情報儀表板體驗。
+  </div>
+
+  <div class="tech-grid anim">
+    <!-- 前端框架 -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(34,197,94,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="tech-cat-title">前端框架與建置</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">React 18</span>
+          <span class="tech-badge" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">UI 核心</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">TypeScript 5.5</span>
+          <span class="tech-badge" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">型別安全</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Vite 5.4</span>
+          <span class="tech-badge" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">建置工具</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Tailwind CSS 3.4</span>
+          <span class="tech-badge" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">樣式系統</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">ESLint 9</span>
+          <span class="tech-badge" style="background: rgba(34,197,94,0.12); color: var(--accent-green);">程式碼品質</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 地圖與視覺化 -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(59,130,246,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="tech-cat-title">地圖與視覺化</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">Leaflet 1.9</span>
+          <span class="tech-badge" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">地圖引擎</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">React-Leaflet 4.2</span>
+          <span class="tech-badge" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">React 綁定</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Leaflet.MarkerCluster</span>
+          <span class="tech-badge" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">標記聚合</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">CARTO Dark / Voyager</span>
+          <span class="tech-badge" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">底圖來源</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Recharts 3.10</span>
+          <span class="tech-badge" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);">圖表（備用）</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 圖示與 UI -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(245,158,11,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+        </div>
+        <div class="tech-cat-title">圖示與 UI 元素</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">Lucide React</span>
+          <span class="tech-badge" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">SVG 圖示庫</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Noto Sans TC</span>
+          <span class="tech-badge" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">中文字型</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">JetBrains Mono</span>
+          <span class="tech-badge" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">數據等寬字型</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">PostCSS / Autoprefixer</span>
+          <span class="tech-badge" style="background: rgba(245,158,11,0.12); color: var(--accent-amber);">CSS 後處理</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 資料 API -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(239,68,68,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+        </div>
+        <div class="tech-cat-title">外部資料 API</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">GDELT DOC 2.0 API</span>
+          <span class="tech-badge" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">Tier 1 新聞</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Google News RSS</span>
+          <span class="tech-badge" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">Tier 2 補充</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">RSS2JSON API</span>
+          <span class="tech-badge" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">RSS 轉 JSON</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">OpenWeatherMap Tiles</span>
+          <span class="tech-badge" style="background: rgba(239,68,68,0.12); color: var(--accent-red);">氣象圖塊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 資料處理 -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(6,182,212,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div class="tech-cat-title">資料處理與分析</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">關鍵字框架分類引擎</span>
+          <span class="tech-badge" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">內建</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">主題模式比對</span>
+          <span class="tech-badge" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">6 模式</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">區域情感差異分析</span>
+          <span class="tech-badge" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">東西方</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">出版商地理編碼</span>
+          <span class="tech-badge" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">網域查詢</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">種子偽隨機環境模型</span>
+          <span class="tech-badge" style="background: rgba(6,182,212,0.12); color: var(--accent-cyan);">5km 網格</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 後端與部署 -->
+    <div class="tech-category">
+      <div class="tech-cat-header">
+        <div class="tech-cat-icon" style="background: rgba(168,85,247,0.12);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="tech-cat-title">後端與基礎設施</div>
+      </div>
+      <div class="tech-list">
+        <div class="tech-item">
+          <span class="tech-name">Supabase</span>
+          <span class="tech-badge" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">資料庫 / Auth</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Bolt.new</span>
+          <span class="tech-badge" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">開發平台</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Browser Fetch API</span>
+          <span class="tech-badge" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">資料擷取</span>
+        </div>
+        <div class="tech-item">
+          <span class="tech-name">Performance API</span>
+          <span class="tech-badge" style="background: rgba(168,85,247,0.12); color: var(--accent-purple);">延遲測量</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">09 / 10</span>
+    <span class="slide-section">開發模組與工具</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 10 — 總結與未來展望
+════════════════════════════════════════════════════════════════ -->
+<div class="slide" data-slide="10">
+  <div class="slide-eyebrow anim">SUMMARY &amp; OUTLOOK</div>
+  <div class="slide-title anim">總結與未來展望</div>
+
+  <div class="summary-hero anim">
+    <div class="slide-subtitle" style="margin: 0 auto;">
+      TRACE 將全球新聞、地緣事件、航运咽喉與氣象環境融合於單一互動地圖，
+      並以 AI 敘事簡報將龐雜資料轉化為可操作的情報洞察。
+    </div>
+  </div>
+
+  <div class="summary-grid anim">
+    <div class="summary-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;">
+      <div class="summary-icon" style="background: rgba(59,130,246,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <div class="summary-label">使用者體驗</div>
+      <div class="summary-text">直覺的地圖互動、漸進式資訊揭露、AI 問答與可審計的搜尋流程，讓情報工作者高效掌握全局。</div>
+    </div>
+    <div class="summary-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;">
+      <div class="summary-icon" style="background: rgba(239,68,68,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+      </div>
+      <div class="summary-label">應用場合</div>
+      <div class="summary-text">國防安全監測、外交決策支援、供應鏈風險控管、學術研究與新聞框架分析等多領域場景。</div>
+    </div>
+    <div class="summary-item" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;">
+      <div class="summary-icon" style="background: rgba(245,158,11,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+      </div>
+      <div class="summary-label">設計理念</div>
+      <div class="summary-text">OSINT 情報美學、多層資料融合、可審計治理、漸進式揭露與優雅降級五大原則貫穿全域。</div>
+    </div>
+  </div>
+
+  <div style="height: 32px;"></div>
+
+  <div class="anim" style="width: 100%; max-width: 1000px;">
+    <h3 style="font-size: 14px; font-weight: 700; color: var(--accent-amber); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); text-align: center;">未來展望</h3>
+    <div class="cards-grid three-col" style="max-width: 1000px;">
+      <div class="info-card" style="--card-accent: var(--accent-green);">
+        <div class="card-title" style="font-size: 14px;">即時推播與預警</div>
+        <div class="card-text">引入 WebSocket 即時資料流，當特定國家或框架的報導量突破閾值時，自動推播預警通知。</div>
+      </div>
+      <div class="info-card" style="--card-accent: var(--accent-blue);">
+        <div class="card-title" style="font-size: 14px;">歷史回溯分析</div>
+        <div class="card-text">整合 Supabase 時間序列儲存，讓使用者可回溯特定日期區間的新聞框架變化與事件趨勢。</div>
+      </div>
+      <div class="info-card" style="--card-accent: var(--accent-purple);">
+        <div class="card-title" style="font-size: 14px;">LLM 深度整合</div>
+        <div class="card-text">將目前的規則式 AI 分析升級為大型語言模型驅動，提供更深層的語意理解與跨語言摘要能力。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="end-mark anim" style="text-align: center; margin-top: 32px;">— END OF PRESENTATION —</div>
+
+  <div class="slide-meta">
+    <span class="slide-num mono">10 / 10</span>
+    <span class="slide-section">總結與展望</span>
+  </div>
+</div>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar" id="progressBar" style="width: 10%;"></div>
+
+  <!-- Navigation -->
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" title="Previous">&#8249;</button>
+    <span class="nav-counter" id="counter">01 / 10</span>
+    <button class="nav-btn" id="nextBtn" title="Next">&#8250;</button>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+    const progressBar = document.getElementById('progressBar');
+    const counter = document.getElementById('counter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function go(index) {
+      if (index < 0 || index >= total) return;
+      slides[current].classList.remove('active');
+      slides[current].classList.add('exit-left');
+      const prev = current;
+      current = index;
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          slides[prev].classList.remove('exit-left');
+        }, 600);
+        slides[current].classList.add('active');
+      });
+      updateUI();
+    }
+
+    function updateUI() {
+      const num = String(current + 1).padStart(2, '0');
+      const tot = String(total).padStart(2, '0');
+      counter.textContent = num + ' / ' + tot;
+      progressBar.style.width = ((current + 1) / total * 100) + '%';
+    }
+
+    function next() { go(Math.min(current + 1, total - 1)); }
+    function prev() { go(Math.max(current - 1, 0)); }
+
+    nextBtn.addEventListener('click', next);
+    prevBtn.addEventListener('click', prev);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        next();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prev();
+      } else if (e.key === 'Home') {
+        go(0);
+      } else if (e.key === 'End') {
+        go(total - 1);
+      }
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    });
+    document.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0) next(); else prev();
+      }
+    });
+
+    updateUI();
+  })();
+</script>
+
+</body>
+</html>
