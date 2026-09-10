@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DBJ 提案簡報｜全域視角之國家韌性地理情報分析平台</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #151e35;
+      --line: #2a3658;
+      --text: #edf2ff;
+      --muted: #9fb0d9;
+      --accent: #ffb020;
+      --accent-2: #57d3ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      background: radial-gradient(circle at top, #1b2750 0%, var(--bg) 45%);
+      color: var(--text);
+      overflow: hidden;
+    }
+    #deck { position: relative; width: 100vw; height: 100vh; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 56px 70px;
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      background: transparent;
+    }
+    .slide.active { display: flex; }
+    .kicker {
+      letter-spacing: 2px;
+      font-size: 12px;
+      color: var(--accent-2);
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 44px; line-height: 1.25; }
+    h2 { margin: 0; font-size: 34px; line-height: 1.3; }
+    .subtitle { color: var(--muted); font-size: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .card {
+      background: color-mix(in srgb, var(--card) 92%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .card h3 { margin: 0 0 8px; color: var(--accent); font-size: 20px; }
+    .card p, .card li { color: var(--muted); font-size: 18px; line-height: 1.6; }
+    ul { margin: 8px 0 0 20px; }
+    .meta {
+      position: absolute;
+      left: 70px;
+      bottom: 26px;
+      font-size: 13px;
+      color: #7c8db8;
+    }
+    .controls {
+      position: fixed;
+      right: 26px;
+      bottom: 20px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      background: #111a31;
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .counter { color: var(--muted); font-size: 13px; min-width: 56px; text-align: center; }
+    .cover-box {
+      margin-top: 30px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      background: #111a31cc;
+    }
+  </style>
+</head>
+<body>
+  <div id="deck">
+    <section class="slide active">
+      <div class="kicker">Slide 1 · 封面</div>
+      <h1>全域視角之國家韌性地理情報分析平台</h1>
+      <div class="subtitle">Global Perception &amp; Resilient GEOINT Platform</div>
+      <div class="cover-box">
+        <p><strong>提案團隊：</strong>DBJ</p>
+        <p><strong>提案主題：</strong>整合全球開源情報、地理資訊與風險分析，支援國家韌性決策</p>
+      </div>
+      <div class="meta">01 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 2 · 提案目標</div>
+      <h2>提案目標與國家韌性對應項目</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>核心目標</h3>
+          <ul>
+            <li>建立跨區域、跨議題的即時 GEOINT 監測能力</li>
+            <li>把新聞訊號轉換為可定位、可比較的風險圖層</li>
+            <li>提供政策與應變單位可操作的情境判讀介面</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>韌性對應</h3>
+          <ul>
+            <li>關鍵基礎設施韌性：航道、港口、供應鏈節點預警</li>
+            <li>經濟韌性：半導體與國際貿易風險監測</li>
+            <li>社會與治理韌性：跨國敘事分歧與認知風險辨識</li>
+          </ul>
+        </div>
+      </div>
+      <div class="meta">02 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 3 · 問題與重要性</div>
+      <h2>欲解決之問題及其重要性</h2>
+      <div class="card">
+        <ul>
+          <li>現況痛點：資訊來源分散、更新快、真偽混雜，決策難以快速整合。</li>
+          <li>風險缺口：軍事、外交、經濟訊號彼此關聯，傳統系統難做跨域判讀。</li>
+          <li>地理盲點：沒有空間化視角時，難以辨識衝擊路徑與外溢範圍。</li>
+          <li>國安需求：面對高頻地緣事件，需要可持續且可追溯的監測平台。</li>
+        </ul>
+      </div>
+      <div class="meta">03 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 4 · 設計構想</div>
+      <h2>平台設計構想（整體架構）</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>資料流程</h3>
+          <ul>
+            <li>多源資料擷取 → 清洗去重 → 地理定位 → 主題標註</li>
+            <li>以國家、區域、航道與事件為單位形成監測圖層</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>決策流程</h3>
+          <ul>
+            <li>地圖檢視異常熱點與事件聚集</li>
+            <li>AI 摘要輸出核心敘事與區域差異</li>
+            <li>形成情境研判與應變建議</li>
+          </ul>
+        </div>
+      </div>
+      <div class="meta">04 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 5 · 使用資料</div>
+      <h2>設計構想：使用資料</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>開源情報與新聞資料</h3>
+          <ul>
+            <li>GDELT 國際新聞事件資料</li>
+            <li>Google News/RSS 補充來源</li>
+            <li>來源審計紀錄（查詢式、筆數、延遲）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>地理與環境資料</h3>
+          <ul>
+            <li>國家與媒體發布源座標資料庫</li>
+            <li>關鍵海峽/航道 chokepoints</li>
+            <li>氣象與環境條件圖層（風、雲、降雨）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="meta">05 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 6 · 分析方法</div>
+      <h2>設計構想：分析方法</h2>
+      <div class="card">
+        <ul>
+          <li>敘事框架分類：將報導分類為軍事、經濟、外交三大框架。</li>
+          <li>地理群聚分析：依國家與區域聚合，呈現全球關注分布。</li>
+          <li>跨區比較：比對西方與亞洲來源之敘事差異與重點偏向。</li>
+          <li>AI 摘要與問答：輸出主題趨勢、關鍵標題與情境解讀。</li>
+        </ul>
+      </div>
+      <div class="meta">06 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 7 · 可行性與技術完備度</div>
+      <h2>可行性分析與技術完備度評估</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>可行性</h3>
+          <ul>
+            <li>前端地圖與圖層切換功能已可運行</li>
+            <li>資料來源具備主備援（GDELT / RSS / Mock）</li>
+            <li>具備查詢審計與可視化輸出，利於實務落地</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>技術完備度（TRL）</h3>
+          <ul>
+            <li>現況：TRL 5-6（原型已在模擬情境驗證）</li>
+            <li>短期：補強真實資料串接與異常告警邏輯</li>
+            <li>中期：導入跨部會驗證流程，推進 TRL 7+</li>
+          </ul>
+        </div>
+      </div>
+      <div class="meta">07 / 08</div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Slide 8 · 預期效益與驗證</div>
+      <h2>預期效益與驗證方式</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>預期效益</h3>
+          <ul>
+            <li>縮短事件判讀時間，提升跨單位情資共享效率</li>
+            <li>強化供應鏈、航運與區域安全風險的早期預警能力</li>
+            <li>建立可持續、可追溯的國家韌性監測基礎</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>驗證方式</h3>
+          <ul>
+            <li>準確度：框架分類與人工標註一致率</li>
+            <li>時效性：事件發生至平台呈現時間差</li>
+            <li>可用性：使用者任務完成率與決策滿意度</li>
+          </ul>
+        </div>
+      </div>
+      <div class="meta">08 / 08</div>
+    </section>
+  </div>
+
+  <div class="controls">
+    <button id="prev" class="btn">◀</button>
+    <div id="counter" class="counter">1 / 8</div>
+    <button id="next" class="btn">▶</button>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('counter');
+    let idx = 0;
+    function render() {
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      counter.textContent = `${idx + 1} / ${slides.length}`;
+    }
+    document.getElementById('prev').addEventListener('click', () => {
+      idx = (idx - 1 + slides.length) % slides.length;
+      render();
+    });
+    document.getElementById('next').addEventListener('click', () => {
+      idx = (idx + 1) % slides.length;
+      render();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') document.getElementById('prev').click();
+      if (e.key === 'ArrowRight') document.getElementById('next').click();
+    });
+  </script>
+</body>
+</html>
